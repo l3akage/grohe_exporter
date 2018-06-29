@@ -17,17 +17,12 @@ const prefix = "grohe_"
 
 var (
 	upDesc               *prometheus.Desc
-	tempDesc             *prometheus.Desc
-	humDesc              *prometheus.Desc
 	lastNotificationDesc *prometheus.Desc
 )
 
 func init() {
 	upDesc = prometheus.NewDesc(prefix+"up", "Scrape was successful", nil, nil)
-	l := []string{"house", "room", "appliance"}
-	tempDesc = prometheus.NewDesc(prefix+"temp", "Air temperature (in degrees C)", l, nil)
-	humDesc = prometheus.NewDesc(prefix+"humidity_percent", "Humidity", l, nil)
-	l = append(l, "category")
+	l := []string{"house", "room", "appliance", "category"}
 	lastNotificationDesc = prometheus.NewDesc(prefix+"last_notification", "Timestmap of last notification per category", l, nil)
 }
 
@@ -77,13 +72,6 @@ func getAppliances(location, room int) (Appliances, error) {
 	return a, err
 }
 
-func getApplianceData(location, room int, appliance string) (ApplianceData, error) {
-	a := ApplianceData{}
-	path := fmt.Sprintf(applianceDataPath, location, room, appliance)
-	err := get(base+path, &a)
-	return a, err
-}
-
 func getApplianceNotifications(location, room int, appliance string) (ApplianceNotifications, error) {
 	a := ApplianceNotifications{}
 	path := fmt.Sprintf(applianceNotificationsPath, location, room, appliance)
@@ -96,8 +84,6 @@ type groheCollector struct {
 
 func (c groheCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upDesc
-	ch <- tempDesc
-	ch <- humDesc
 	ch <- lastNotificationDesc
 }
 
@@ -121,15 +107,6 @@ func (c groheCollector) Collect(ch chan<- prometheus.Metric) {
 			if err3 != nil {
 				fmt.Fprintf(os.Stderr, "can't get appliances from %s\n", room.Name)
 				continue
-			}
-			for _, appliance := range appliances.Appliances {
-				data, err4 := getApplianceData(location.ID, room.ID, appliance.ID)
-				if err4 != nil {
-					fmt.Fprintf(os.Stderr, "can't get data from %s\n", appliance.ID)
-					continue
-				}
-				ch <- prometheus.MustNewConstMetric(tempDesc, prometheus.GaugeValue, float64(data.Data.Measurement[0].Temperature), location.Name, room.Name, appliance.Name)
-				ch <- prometheus.MustNewConstMetric(humDesc, prometheus.GaugeValue, float64(data.Data.Measurement[0].Humidity), location.Name, room.Name, appliance.Name)
 			}
 			for _, appliance := range appliances.Appliances {
 				notifications, err4 := getApplianceNotifications(location.ID, room.ID, appliance.ID)

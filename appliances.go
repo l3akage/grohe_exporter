@@ -10,16 +10,6 @@ type Appliance struct {
 	Type int    `json:"type"`
 }
 
-type ApplianceData struct {
-	Data struct {
-		Measurement []struct {
-			Timestamp   string  `json:"timestamp"`
-			Temperature float64 `json:"temperature"`
-			Humidity    float64 `json:"humidity"`
-		} `json:"measurement"`
-	} `json:"data"`
-}
-
 type ApplianceNotifications struct {
 	ApplianceNotification []ApplianceNotification `json:"foo"`
 }
