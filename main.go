@@ -17,7 +17,7 @@ import (
 
 const (
 	version                    string = "0.1"
-	base                       string = "https://idp-apigw.cloud.grohe.com"
+	base                       string = "https://idp2-apigw.cloud.grohe.com"
 	login                      string = "/v2/iot/auth/users/login"
 	locationsPath              string = "/v2/iot/locations"
 	roomsPath                  string = "/v2/iot/locations/%d/rooms"
